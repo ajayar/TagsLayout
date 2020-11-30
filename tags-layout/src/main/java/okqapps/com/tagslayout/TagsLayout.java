@@ -18,6 +18,14 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+// interface for notifying selection of tags
+public interface TagsSelectNotifier {
+    // notify when tag is selected
+    public void onSelectTag(TagItem);
+    // notify when tag is unselected
+    public void onRemoveTag(TagItem);
+}
+
 public class TagsLayout extends FlowLayout {
     private List<TagItem> tagItemList;
     private ArrayList<Object> selectedTags = new ArrayList<>();
@@ -31,6 +39,7 @@ public class TagsLayout extends FlowLayout {
     private int horizontalPadding = 10;
     private int verticalPadding = 10;
     private boolean viewMode;
+    private TagsSelectNotifier notifier = null;
 
     public TagsLayout(Context context) {
         super(context);
@@ -69,6 +78,19 @@ public class TagsLayout extends FlowLayout {
     public void initializeTags(Context context, List<TagItem> tagItemList) {
         this.context = context;
         this.tagItemList = tagItemList;
+        drawTags();
+    }
+
+    /**
+     * initialize and draw tags with notifier on screen this method should be called after finish setup view with all items and and properties
+     *
+     * @param context
+     * @param tagItemList
+     */
+    public void initializeTags(Context context, List<TagItem> tagItemList, TagsSelectNotifier notifier) {
+        this.context = context;
+        this.tagItemList = tagItemList;
+        this.notifier = notifier;
         drawTags();
     }
 
@@ -122,10 +144,12 @@ public class TagsLayout extends FlowLayout {
                             }
                             getSelectedTags().add(tagItem.getTagID());
                             selectItem(textView, tagItem);
+                            if(notifier) notifier.onSelectTag(tagItem);
                         }//tag unselected
                         else {
                             getSelectedTags().remove(tagItem.getTagID());
                             setTextViewUnSelectedBackground(textView);
+                            if(notifier) notifier.onRemoveTag(tagItem);
                         }
                     }
                 });
